@@ -12,6 +12,9 @@
 // The test checks that the last parameter is not `nullptr` for all PI calls
 // that should discard events.
 // {{0|0000000000000000}} is required for various output on Linux and Windows.
+// NOTE: piextUSMEnqueuePrefetch in the CUDA backend may return a warning
+//       result on Windows with error-code -996 (PI_PLUGIN_SPECIFIC_ERROR).
+//       Since it is a warning it is safe to ignore for this test.
 //
 // Everything that follows TestQueueOperations()
 // CHECK: ---> piextUSMEnqueueMemset(
@@ -39,7 +42,7 @@
 // CHECK: ---> piextUSMEnqueuePrefetch(
 // CHECK:        pi_event * :
 // CHECK-NOT:        pi_event * : {{0|0000000000000000}}[ nullptr ]
-// CHECK: --->  pi_result : PI_SUCCESS
+// CHECK: --->  pi_result : {{PI_SUCCESS|-996}}
 //
 // CHECK: ---> piextUSMEnqueueMemAdvise(
 // CHECK-NOT:        pi_event * : {{0|0000000000000000}}[ nullptr ]
@@ -96,7 +99,7 @@
 // CHECK: ---> piextUSMEnqueuePrefetch(
 // CHECK:        pi_event * :
 // CHECK-NOT:        pi_event * : {{0|0000000000000000}}[ nullptr ]
-// CHECK: --->  pi_result : PI_SUCCESS
+// CHECK: --->  pi_result : {{PI_SUCCESS|-996}}
 //
 // CHECK: ---> piextUSMEnqueueMemAdvise(
 // CHECK-NOT:        pi_event * : {{0|0000000000000000}}[ nullptr ]

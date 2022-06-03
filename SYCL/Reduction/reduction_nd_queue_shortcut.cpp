@@ -1,4 +1,4 @@
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out -Xsycl-target-backend=nvptx64-nvidia-cuda --cuda-gpu-arch=sm_60
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
@@ -51,13 +51,13 @@ int test(queue &Q, BinaryOperation BOp, const nd_range<Dims> &Range) {
        Sum.combine(static_cast<T>(LinId) + Arr[LinId]);
      }).wait();
   } else if constexpr (TC == TestCase::Dependency) {
-    auto E = Q.single_task([=]() { std::fill(Arr, Arr + NElems, 1); });
+    auto E = Q.fill<T>(Arr, 1, NElems);
     Q.parallel_for(Range, E, Redu, [=](nd_item<Dims> It, auto &Sum) {
        size_t LinId = It.get_global_linear_id();
        Sum.combine(static_cast<T>(LinId) + Arr[LinId]);
      }).wait();
   } else {
-    auto E = Q.single_task([=]() { std::fill(Arr, Arr + NElems, 1); });
+    auto E = Q.fill<T>(Arr, 1, NElems);
     std::vector<event> EVec{E};
     Q.parallel_for(Range, EVec, Redu, [=](nd_item<Dims> It, auto &Sum) {
        size_t LinId = It.get_global_linear_id();
